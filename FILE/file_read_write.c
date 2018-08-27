@@ -4,14 +4,22 @@
 
 int main(int argc, char *argv[])
 {
+	 char pathBuf[50]={0,};
+	 char *str ="ABCDEFGHIJ";
+
 	 readFile();
-	 writeFile();
+
+	 sprintf(pathBuf, "./result.txt");
+	 saveFile(pathBuf, str, 10);
 }
 
 int readFile()
 {
 	FILE *fp_in;
-	char buf_in[255] ={0,};
+	char buf[10] ={0,};
+	int nCount=0;
+	float fRatio;
+	char strDesc[255];
 
 	fp_in = fopen("itemlist.txt", "r");
 
@@ -21,19 +29,24 @@ int readFile()
 		exit(0);
 	}
 
-	while(fgets(buf_in, 255, fp_in) != NULL)
+	while(!feof(fp_in))
 	{
-	//	printf("[%d]%s(%02x)", strlen(buf_in), buf_in, buf_in[strlen(buf_in)]);
-		char *type = strtok(buf_in, "#\r\n");
-		char *dtime = strtok(NULL, "#\r\n");
-		char *code = strtok(NULL, "#\r\n");
+		fscanf(fp_in, "%s %d", buf, &nCount);
+		//공백으로 분리된 파일 읽기
+		fscanf( fp_in, "%d %f %s\n", &nCount, &fRatio, strDesc );
+		printf( "공백으로 분리 : %d %f %s\n", nCount, fRatio, strDesc );
 
-	//	printf("\n");
+		//,로 분리된 파일 읽기
+		fscanf( fp_in, "%d, %f, %s\n", &nCount, &fRatio, strDesc );
+		printf( ",로 분리 : %d, %f, %s\n", nCount, fRatio, strDesc );
 
-//		printf("[(%d)%s] [(%d)%s] [(%d)%s]\n",
-//				strlen(dtime), dtime,
-//				strlen(type),type,
-//				strlen(code), code);
+		//탭으로 분리된 파일 읽기
+		fscanf( fp_in, "%d\t%f\t%s\n", &nCount, &fRatio, strDesc );
+		printf( "탭으로 분리 : %d\t%f\t%s\n", nCount, fRatio, strDesc );
+
+		//선별적으로 읽기 - [%*]을 사용하면 값을 읽지 않는다.
+		fscanf( fp_in, "%*d %*f %s\n", strDesc );
+		printf( "선별적으로 읽기 : %s\n", strDesc );
 	}
 
 	fclose(fp_in);
@@ -41,24 +54,14 @@ int readFile()
 	return 0;
 }
 
-int writeFile()
+void saveFile(char *szFullPath, char buf, int nLen)
 {
-	FILE *fp_out;
-
-	fp_out = fopen("OUTPUT.TXT", "a+");
-
-	if(fp_out==NULL)
+	FILE *fp;
+	fp = fopen(szFullPath, "ab");
+	if(!fp)
 	{
-		perror("file open error 1: ");
-		exit(0);
+		return;
 	}
-
-	for(int i=0; i<10; i++)
-	{
-		fprintf(fp_out, "%02d#%02d\n", i, 10-i);
-	}
-
-	fclose(fp_out);
-
-	return 0;
+	fwrite(buf, 1, nLen, fp);
+	fclose(fp);
 }
